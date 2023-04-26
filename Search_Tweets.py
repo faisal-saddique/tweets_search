@@ -8,11 +8,6 @@ from streamlit_extras.switch_page_button import switch_page
 sys.setrecursionlimit(15000)
 # logging.basicConfig(level=logging.DEBUG)
 
-# import json
-# # read configs
-# with open('config.json', 'r') as f:
-#     config = json.load(f)
-
 # bearer_token = config['bearer_token']
 bearer_token = st.secrets['bearer_token']
 
@@ -52,4 +47,5 @@ if st.button("Proceed"):
     st.session_state["response_tweets"] = search_tweets(st.session_state["hashtag"], max_results)
     st.session_state["response_count"] = search_tweets_counts(st.session_state["hashtag"])
 
-    switch_page("View Tweets")
+    st.session_state["proceed"] = True
+    switch_page("View & Export")
