@@ -27,6 +27,7 @@ if ("proceed" in st.session_state and st.session_state["proceed"]):
             st.write(f"**Tweet:** {tweet.text}")
             st.write("---")
 
+    st.write("NOTE: Please uncheck the 'include' value for the tweet you don't want to include in the final result.")
     df = pd.DataFrame(data, columns=['author', 'tweet', 'include'])
     updated_df = st.experimental_data_editor(df, use_container_width=True)
 
