@@ -1,18 +1,17 @@
 import tweepy
 import streamlit as st
 # import logging
-import json
 import sys
 import pandas as pd
 
 sys.setrecursionlimit(15000)
 # logging.basicConfig(level=logging.DEBUG)
 
-# read configs
-with open('config.json', 'r') as f:
-    config = json.load(f)
+# # read configs
+# with open('config.json', 'r') as f:
+#     config = json.load(f)
 
-bearer_token = config['bearer_token']
+bearer_token = st.secrets['bearer_token']
 
 @st.cache_data
 def search_tweets(query,count):
