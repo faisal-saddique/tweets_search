@@ -3,14 +3,17 @@ import streamlit as st
 # import logging
 import sys
 import pandas as pd
+from streamlit_extras.switch_page_button import switch_page
 
 sys.setrecursionlimit(15000)
 # logging.basicConfig(level=logging.DEBUG)
 
+# import json
 # # read configs
 # with open('config.json', 'r') as f:
 #     config = json.load(f)
 
+# bearer_token = config['bearer_token']
 bearer_token = st.secrets['bearer_token']
 
 @st.cache_data
@@ -41,27 +44,12 @@ client = create_client()
 
 st.title("Twitter Scrapper")
 
-hashtag = st.text_input("Please enter the hashtag you wanna search (without #):")
+st.session_state["hashtag"] = st.text_input("Please enter the hashtag you wanna search (without #):")
 max_results = st.number_input("Number of results you wanna fetch (between 10 and 100):",min_value=10,max_value=100,value=10)
 
 if st.button("Proceed"):
 
-    response_tweets = search_tweets(hashtag,max_results)
-    response_count = search_tweets_counts(hashtag)
+    st.session_state["response_tweets"] = search_tweets(st.session_state["hashtag"], max_results)
+    st.session_state["response_count"] = search_tweets_counts(st.session_state["hashtag"])
 
-    st.subheader(f"Number of tweets for #{hashtag} the past 7 days:")
-    st.dataframe(response_count, use_container_width=True)
-
-    st.write("---")
-
-    st.subheader(f"Tweets:")
-
-    tweets = response_tweets.data
-
-    usernames = response_tweets.includes['users']
-
-    # Each Tweet object has default ID and text fields
-    for (tweet,user) in zip(tweets,usernames):
-        st.write(f"**Username:** {user}")
-        st.write(f"**Tweet:** {tweet.text}")
-        st.write("---")
+    switch_page("View Tweets")
