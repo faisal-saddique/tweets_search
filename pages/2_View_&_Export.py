@@ -6,10 +6,10 @@ import os
 
 if ("proceed" in st.session_state and st.session_state["proceed"]):
 
-    st.subheader(f"Number of tweets for #{st.session_state['hashtag']} the past 7 days:")
-    st.dataframe(st.session_state["response_count"], use_container_width=True)
+    # st.subheader(f"Number of tweets for #{st.session_state['hashtag']} the past 7 days:")
+    # st.dataframe(st.session_state["response_count"], use_container_width=True)
 
-    st.write("---")
+    # st.write("---")
 
     st.subheader(f"Tweets:")
 

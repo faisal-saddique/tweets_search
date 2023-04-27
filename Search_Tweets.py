@@ -48,7 +48,7 @@ max_results = st.number_input("Number of results you wanna fetch (between 10 and
 if st.button("Proceed"):
 
     st.session_state["response_tweets"] = search_tweets(st.session_state["hashtag"], max_results)
-    st.session_state["response_count"] = search_tweets_counts(st.session_state["hashtag"])
+    # st.session_state["response_count"] = search_tweets_counts(st.session_state["hashtag"])
 
     st.session_state["proceed"] = True
     switch_page("View & Export")
