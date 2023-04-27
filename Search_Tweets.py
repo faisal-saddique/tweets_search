@@ -5,6 +5,9 @@ import sys
 import pandas as pd
 from streamlit_extras.switch_page_button import switch_page
 
+if "duplicates" not in st.session_state:
+    st.session_state["duplicates"] = []
+
 sys.setrecursionlimit(15000)
 # logging.basicConfig(level=logging.DEBUG)
 

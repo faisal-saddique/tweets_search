@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 from streamlit_extras.switch_page_button import switch_page
+import regex as re
+import os
 
 if ("proceed" in st.session_state and st.session_state["proceed"]):
 
@@ -21,7 +23,7 @@ if ("proceed" in st.session_state and st.session_state["proceed"]):
             data.append({
                 'author': user,
                 'tweet': tweet.text,
-                'include': True
+                'include': False
             })
             st.write(f"**Author:** {user}")
             st.write(f"**Tweet:** {tweet.text}")
@@ -44,15 +46,30 @@ if ("proceed" in st.session_state and st.session_state["proceed"]):
         df = df.drop('include', axis=1)
         return df.to_csv(index=False).encode('utf-8')
 
-    csv = convert_df(final_df)
+    # csv = convert_df(final_df)
 
-    st.subheader("Download Results")
-    st.download_button(
-        label="Download results as CSV",
-        data=csv,
-        file_name='tweets.csv',
-        mime='text/csv',
-    )
+    # if (st.button("Save locally")):
+
+    if st.button("Clear file contents"):
+        os.remove("tweets.txt")
+
+    # Write data to file
+    with open('tweets.txt', 'a', encoding='utf-8-sig') as f:
+        for user, tweet in zip(final_df['author'], final_df['tweet']):
+            if (user not in st.session_state["duplicates"]):
+                st.session_state["duplicates"].append(f"{user}")
+                # Remove emojis
+                tweet = re.sub(r'\p{Emoji}', '', tweet)
+                # Remove newline characters
+                tweet = tweet.replace('\n', '')
+                f.write(f"{user}@\n{tweet}\n")
+
+        # st.download_button(
+        #     label="Download results as CSV",
+        #     data=csv,
+        #     file_name='tweets.csv',
+        #     mime='text/csv',
+        # )
 
 else:
     switch_page("Search Tweets")
