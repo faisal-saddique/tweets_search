@@ -1,5 +1,6 @@
+.gitignore
 faisal_twitter_dev_creds.txt
 config.json
 twitter_sc.py
-# .streamlit/secrets.toml
+.streamlit/secrets.toml
 tweety.exe-win32-x64
