@@ -11,6 +11,8 @@ if ("proceed" in st.session_state and st.session_state["proceed"]):
 
     # st.write("---")
 
+    st.title(st.session_state["file_path"])
+
     st.subheader(f"Tweets:")
 
     tweets = st.session_state["response_tweets"].data
@@ -31,22 +33,6 @@ if ("proceed" in st.session_state and st.session_state["proceed"]):
 
     st.write("**NOTE:** Please uncheck the 'include' value for the tweet you don't want to include in the final result.")
     df = pd.DataFrame(data, columns=['author', 'tweet', 'include'])
-
-
-    # Get file path from user input
-    file_path = st.text_input("Enter the path to save the tweets file:")
-
-    # Verify if the file path is valid
-    if file_path:
-        try:
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            with open(file_path, 'a', encoding='utf-8-sig') as f:
-                f.close()
-                pass
-            # os.remove(file_path)
-        except Exception as e:
-            st.error(f"Invalid file path: {e}")
-            st.stop()
 
     updated_df = st.experimental_data_editor(df, use_container_width=True)
 
@@ -70,14 +56,14 @@ if ("proceed" in st.session_state and st.session_state["proceed"]):
     col1, col2 = st.columns(2)
     with col1:
         if st.button("Clear file contents",use_container_width=True):
-            open(file_path, 'w').close()
+            open(st.session_state["file_path"], 'w').close()
     with col2:
         if st.button("Delete file",use_container_width=True):
-            os.remove(f"{file_path}")
+            os.remove(f"{st.session_state['file_path']}")
 
     # Write data to file
     try:
-        with open(file_path, 'a', encoding='utf-8-sig') as f:
+        with open(st.session_state["file_path"], 'a', encoding='utf-8-sig') as f:
             for user, tweet in zip(final_df['author'], final_df['tweet']):
                 if (user not in st.session_state["duplicates"]):
                     st.session_state["duplicates"].append(f"{user}")
@@ -86,7 +72,7 @@ if ("proceed" in st.session_state and st.session_state["proceed"]):
                     # Remove newline characters
                     tweet = tweet.replace('\n', '')
                     f.write(f"{user}@\n{tweet}\n")
-                    f.close()
+                    # f.close()
         st.success("Tweets file saved successfully!")
 
     except Exception as e:
