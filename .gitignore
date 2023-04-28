@@ -3,3 +3,4 @@ config.json
 twitter_sc.py
 .streamlit/secrets.toml
 tweety.exe-win32-x64
+testing.py

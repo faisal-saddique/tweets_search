@@ -31,6 +31,23 @@ if ("proceed" in st.session_state and st.session_state["proceed"]):
 
     st.write("**NOTE:** Please uncheck the 'include' value for the tweet you don't want to include in the final result.")
     df = pd.DataFrame(data, columns=['author', 'tweet', 'include'])
+
+
+    # Get file path from user input
+    file_path = st.text_input("Enter the path to save the tweets file:")
+
+    # Verify if the file path is valid
+    if file_path:
+        try:
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            with open(file_path, 'a', encoding='utf-8-sig') as f:
+                f.close()
+                pass
+            # os.remove(file_path)
+        except Exception as e:
+            st.error(f"Invalid file path: {e}")
+            st.stop()
+
     updated_df = st.experimental_data_editor(df, use_container_width=True)
 
     # Drop rows where 'include' is False
@@ -50,19 +67,30 @@ if ("proceed" in st.session_state and st.session_state["proceed"]):
 
     # if (st.button("Save locally")):
 
-    if st.button("Clear file contents"):
-        os.remove("tweets.txt")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Clear file contents",use_container_width=True):
+            open(file_path, 'w').close()
+    with col2:
+        if st.button("Delete file",use_container_width=True):
+            os.remove(f"{file_path}")
 
     # Write data to file
-    with open('tweets.txt', 'a', encoding='utf-8-sig') as f:
-        for user, tweet in zip(final_df['author'], final_df['tweet']):
-            if (user not in st.session_state["duplicates"]):
-                st.session_state["duplicates"].append(f"{user}")
-                # Remove emojis
-                tweet = re.sub(r'\p{Emoji}', '', tweet)
-                # Remove newline characters
-                tweet = tweet.replace('\n', '')
-                f.write(f"{user}@\n{tweet}\n")
+    try:
+        with open(file_path, 'a', encoding='utf-8-sig') as f:
+            for user, tweet in zip(final_df['author'], final_df['tweet']):
+                if (user not in st.session_state["duplicates"]):
+                    st.session_state["duplicates"].append(f"{user}")
+                    # Remove emojis
+                    tweet = re.sub(r'\p{Emoji}', '', tweet)
+                    # Remove newline characters
+                    tweet = tweet.replace('\n', '')
+                    f.write(f"{user}@\n{tweet}\n")
+                    f.close()
+        st.success("Tweets file saved successfully!")
+
+    except Exception as e:
+        st.error(f"Error saving tweets file: {e}")
 
         # st.download_button(
         #     label="Download results as CSV",
