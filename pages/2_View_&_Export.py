@@ -3,6 +3,10 @@ import pandas as pd
 from streamlit_extras.switch_page_button import switch_page
 import regex as re
 import os
+from Search_Tweets import search_tweets
+
+if "is_refreshed" not in st.session_state:
+    st.session_state['is_refreshed'] = False
 
 if ("proceed" in st.session_state and st.session_state["proceed"]):
 
@@ -11,35 +15,70 @@ if ("proceed" in st.session_state and st.session_state["proceed"]):
 
     # st.write("---")
 
-    st.title(st.session_state["file_path"])
+    # st.title(st.session_state["file_path"])
+    
+    # st.divider()
 
     st.subheader(f"Tweets:")
 
-    tweets = st.session_state["response_tweets"].data
+    if st.button("Refresh",use_container_width=True):
+        old_tweets = st.session_state["response_tweets"].data
+        new_tweets = search_tweets(st.session_state["hashtag"], st.session_state["max_results"], int(st.session_state["hours"]))
+        new_users = new_tweets.includes['users']
+        new_tweets = new_tweets.data
+        
+        # Create a new dataframe with only the new tweets
+        data = []
+        with st.expander("Expand fetched tweets"):
+            for i, (tweet, user) in enumerate(zip(new_tweets, new_users)):
+                if tweet not in old_tweets:
+                    data.append({
+                        'author': user,
+                        'tweet': tweet.text,
+                        'include': False
+                    })
 
-    usernames = st.session_state["response_tweets"].includes['users']
+                st.write(f"**Author:** {user}")
+                st.write(f"**Tweet:** {tweet.text}")
+                st.write("---")
 
-    data = []
-    with st.expander("Expand fetched tweets"):
-        for i, (tweet, user) in enumerate(zip(tweets, usernames)):
-            data.append({
-                'author': user,
-                'tweet': tweet.text,
-                'include': False
-            })
-            st.write(f"**Author:** {user}")
-            st.write(f"**Tweet:** {tweet.text}")
-            st.write("---")
+        df_new = pd.DataFrame(data, columns=['author', 'tweet', 'include'])
+
+        # Append the new dataframe to the existing dataframe
+        # df = pd.concat([st.session_state["df"], df_new], ignore_index=True)
+
+        # Update the session state variable
+        st.session_state["df"] = df_new
+        st.session_state['is_refreshed'] = True
+
+    if not st.session_state['is_refreshed']:
+        tweets = st.session_state["response_tweets"].data
+
+        usernames = st.session_state["response_tweets"].includes['users']
+
+        data = []
+
+        with st.expander("Expand fetched tweets"):
+            for i, (tweet, user) in enumerate(zip(tweets, usernames)):
+                data.append({
+                    'author': user,
+                    'tweet': tweet.text,
+                    'include': False
+                })
+                st.write(f"**Author:** {user}")
+                st.write(f"**Tweet:** {tweet.text}")
+                st.write("---")
+
+        st.write("**NOTE:** Please uncheck the 'include' value for the tweet you don't want to include in the final result.")
+        st.session_state['df'] = pd.DataFrame(data, columns=['author', 'tweet', 'include'])
 
     st.write("**NOTE:** Please uncheck the 'include' value for the tweet you don't want to include in the final result.")
-    df = pd.DataFrame(data, columns=['author', 'tweet', 'include'])
-
-    updated_df = st.experimental_data_editor(df, use_container_width=True)
+    updated_df = st.experimental_data_editor(st.session_state['df'], use_container_width=True)
 
     # Drop rows where 'include' is False
-    final_df = updated_df.drop(updated_df[updated_df['include'] == False].index)
+    # final_df = updated_df.drop(updated_df[updated_df['include'] == False].index)
 
-    # st.dataframe(final_df,use_container_width=True)
+    # st.dataframe(updated_df,use_container_width=True)
 
     # Cache the conversion to prevent computation on every rerun
     @st.cache_data
@@ -61,22 +100,55 @@ if ("proceed" in st.session_state and st.session_state["proceed"]):
         if st.button("Delete file",use_container_width=True):
             os.remove(f"{st.session_state['file_path']}")
 
-    # Write data to file
-    try:
-        with open(st.session_state["file_path"], 'a', encoding='utf-8-sig') as f:
-            for user, tweet in zip(final_df['author'], final_df['tweet']):
-                if (user not in st.session_state["duplicates"]):
-                    st.session_state["duplicates"].append(f"{user}")
-                    # Remove emojis
-                    tweet = re.sub(r'\p{Emoji}', '', tweet)
-                    # Remove newline characters
-                    tweet = tweet.replace('\n', '')
-                    f.write(f"{user}@\n{tweet}\n")
-                    # f.close()
-        st.success("Tweets file saved successfully!")
+    def update_file(df):
+        # Write data to file
+        try:
+            with open(st.session_state["file_path"], 'a', encoding='utf-8-sig') as f:
+                for index, row in df.iterrows():
+                    if row['include']:
+                        # st.success(row['author'])
+                        if (row['author'] not in st.session_state["duplicates"]):
+                            st.session_state["duplicates"].append(
+                                f"{row['author']}")
+                            user = row['author']
+                            tweet = row['tweet']
+                            # Remove emojis
+                            tweet = re.sub(r'\p{Emoji}', '', tweet)
+                            # Remove newline characters
+                            tweet = tweet.replace('\n', '')
+                            f.write(f"{user}@\n{tweet}\n")
+                        else:
+                            st.warning("Entry duplicated, ignoring it.")
+                    else:
+                        # st.error(row['author'])
+                        # Read contents of file into a list
+                        with open(st.session_state["file_path"], 'r', encoding='utf-8-sig') as fr:
+                            lines = fr.readlines()
+                            # st.error(f"Lines before the change {lines}")
+                        # Check if tweet is in the file
+                        tweet_lines = [i for i in range(
+                            len(lines)) if f"{row['author']}@" in lines[i]]
+                        # st.error(f"duplicating tweets: {tweet_lines}")
+                        if tweet_lines:
+                            # Delete tweet and following line from the list
+                            lines.pop(tweet_lines[0])
+                            if tweet_lines[0] < len(lines):
+                                lines.pop(tweet_lines[0])
+                            
+                            # st.error(f"Lines after the change {lines}")
+                            # Write remaining lines to the file
+                            with open(st.session_state["file_path"], 'w', encoding='utf-8-sig') as f_sec:
+                                f_sec.writelines(lines)
+                                f_sec.close()
 
-    except Exception as e:
-        st.error(f"Error saving tweets file: {e}")
+                fr.close()
+                f.close()
+                st.success("Tweets file saved successfully!")
+        except Exception as e:
+            st.error(f"Error saving tweets file: {e}")
+
+
+    update_file(updated_df)
 
         # st.download_button(
         #     label="Download results as CSV",
