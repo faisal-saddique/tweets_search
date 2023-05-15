@@ -55,7 +55,7 @@ if ("proceed" in st.session_state and st.session_state["proceed"]):
 
     if not st.session_state['is_refreshed']:
         tweets = st.session_state["response_tweets"].data
-
+        # st.write("g")
         usernames = st.session_state["response_tweets"].includes['users']
 
         data = []

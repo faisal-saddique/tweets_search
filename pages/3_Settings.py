@@ -51,4 +51,14 @@ if st.button("Save") and hashtag_value and filepath and hours_input:
             del st.session_state["hashtag"]
         if "hours" in st.session_state:
             del st.session_state["hours"]
+        if "response_tweets" in st.session_state:
+             del st.session_state["response_tweets"]
+        if "is_refreshed" in st.session_state:
+            st.session_state['is_refreshed'] = False
+        if "df" in st.session_state:
+             del st.session_state["df"]
+        if "duplicates" in st.session_state:
+             del st.session_state["duplicates"]
+
+
         st.success("JSON data written to file successfully. Go to Search Tweets page.")
