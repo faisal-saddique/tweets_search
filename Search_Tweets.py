@@ -18,6 +18,8 @@ sys.setrecursionlimit(15000)
 # bearer_token = config['bearer_token']
 bearer_token = st.secrets['bearer_token']
 
+# st.write(bearer_token)
+
 # @st.cache_data
 def search_tweets(query,count,hours_before):
     time_before_x_hours = datetime.datetime.utcnow() - datetime.timedelta(hours=hours_before)
