@@ -118,7 +118,7 @@ if ("proceed" in st.session_state and st.session_state["proceed"]):
                             tweet = re.sub(r'\p{Emoji}', '', tweet)
                             # Remove newline characters
                             tweet = tweet.replace('\n', '')
-                            f.write(f"{user}@\n{tweet}\n")
+                            f.write(f"{tweet}\n{user}@\n")
                         else:
                             st.warning("Entry duplicated, ignoring it.")
                     else:
@@ -126,12 +126,24 @@ if ("proceed" in st.session_state and st.session_state["proceed"]):
                             lines = fr.readlines()
                         tweet_lines = [i for i in range(len(lines)) if f"{row['author']}@" in lines[i]]
                         if tweet_lines:
-                            lines.pop(tweet_lines[0])
-                            if tweet_lines[0] < len(lines):
-                                lines.pop(tweet_lines[0])
+                            current_line_index = tweet_lines[0]
+                            lines.pop(current_line_index)  # Remove current line
+                            if current_line_index > 0:
+                                lines.pop(current_line_index - 1)  # Remove line above current line
                             with open(st.session_state["file_path"], 'w', encoding='utf-8-sig') as f_sec:
                                 f_sec.writelines(lines)
-                                f_sec.close()
+
+                    # else:
+                    #     with open(st.session_state["file_path"], 'r', encoding='utf-8-sig') as fr:
+                    #         lines = fr.readlines()         
+                    #     tweet_lines = [i for i in range(len(lines)) if f"{row['author']}@" in lines[i]]
+                    #     if tweet_lines:
+                    #         for i in range(tweet_lines[0]):
+                    #             lines.pop(0)  
+                    #         lines.pop(tweet_lines[0])            
+                    #         with open(st.session_state["file_path"], 'w', encoding='utf-8-sig') as f_sec:
+                    #             f_sec.writelines(lines)       
+                    #             f_sec.close()
 
             # Close the file objects (f and fr) outside the loop
             if fr is not None:
