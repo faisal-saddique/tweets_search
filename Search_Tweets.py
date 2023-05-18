@@ -27,7 +27,7 @@ def search_tweets(query,count,hours_before):
     time_before_x_hours_str = time_before_x_hours.strftime('%Y-%m-%dT%H:%M:%SZ')
 
     response_tweets = client.search_recent_tweets(
-        query=f"#{query} -is:retweet", max_results=count, expansions=["author_id"], start_time=time_before_x_hours_str, end_time=(datetime.datetime.utcnow() - datetime.timedelta(seconds=10)).strftime('%Y-%m-%dT%H:%M:%SZ'))
+        query=f"#{query} -is:retweet", max_results=count, expansions=["author_id"], start_time=time_before_x_hours_str, end_time=(datetime.datetime.utcnow() - datetime.timedelta(seconds=60)).strftime('%Y-%m-%dT%H:%M:%SZ'))
     return response_tweets
 
 # @st.cache_data

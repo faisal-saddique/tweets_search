@@ -120,7 +120,8 @@ if ("proceed" in st.session_state and st.session_state["proceed"]):
                             tweet = tweet.replace('\n', '')
                             f.write(f"{tweet}\n{user}@\n")
                         else:
-                            st.warning("Entry duplicated, ignoring it.")
+                            pass
+                            # st.warning("Entry duplicated, ignoring it.")
                     else:
                         with open(st.session_state["file_path"], 'r', encoding='utf-8-sig') as fr:
                             lines = fr.readlines()
